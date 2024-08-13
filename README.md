@@ -2,7 +2,7 @@
 
 ## A fully functional black-scholes model written in python that is interactable and includes a heatmap for calls and puts
 
-![image](https://github.com/user-attachments/assets/17b4b699-a45a-4878-9e2f-5e52335bf6c0)
+![image](https://github.com/user-attachments/assets/128724f2-cd16-478b-8d5d-e9ce139614a1)
 
 This project was made as a personal project for myself as I have a love for mathematics and investing. 
 I think it really provides value to myself as a student because it is a good beginning to show what I 
