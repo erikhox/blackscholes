@@ -4,7 +4,6 @@ from scipy.stats import norm
 import seaborn as sn
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import yfinance as yf
 
 #calculates the d1 of the black scholes formula
