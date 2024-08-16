@@ -71,7 +71,7 @@ if choice:
     print_cap = round(cap, 2)
 
     #printing out current stock value
-    st.sidebar.write(f"Current {ticker} price: {print_cap}")
+    st.sidebar.write(f"Current {ticker.upper()} price: {print_cap}")
 
     #grabbing user inputed data
     sp = st.sidebar.number_input("Strike Price", value=100.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
