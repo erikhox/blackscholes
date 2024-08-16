@@ -1,5 +1,4 @@
 import streamlit as st
-import math
 from scipy.stats import norm
 import seaborn as sn
 import matplotlib.pyplot as plt
@@ -8,30 +7,30 @@ import yfinance as yf
 
 #calculates the d1 of the black scholes formula
 def d1(price, strike, rf, years, vol):
-    return (math.log(price/strike)+years*(rf+math.pow(vol, 2)/2))/(vol*math.sqrt(years))
+    return (np.log(price/strike)+years*(rf+np.pow(vol, 2)/2))/(vol*np.sqrt(years))
 
 #calculates the d2 of the black scholes formula
 def d2(price, strike, rf, years, vol):
-    return d1(price, strike, rf, years, vol) - vol*math.sqrt(years)
+    return d1(price, strike, rf, years, vol) - vol*np.sqrt(years)
 
 #calculates the call premium cost using the black scholes formula
 def call_value(price, strike, rf, years, vol):
     d1_val = d1(price, strike, rf, years, vol)
     d2_val = d2(price, strike, rf, years, vol)
-    return price*norm.cdf(d1_val)-strike*math.exp(-rf*years)*norm.cdf(d2_val)
+    return price*norm.cdf(d1_val)-strike*np.exp(-rf*years)*norm.cdf(d2_val)
 
 #calculates the put premium cost using the black scholes formula
 def put_value(price, strike, rf, years, vol):
     d1_val = d1(price, strike, rf, years, vol)
     d2_val = d2(price, strike, rf, years, vol)
-    return strike*math.exp(-rf*years)*norm.cdf(-d2_val)-price*norm.cdf(-d1_val)
+    return strike*np.exp(-rf*years)*norm.cdf(-d2_val)-price*norm.cdf(-d1_val)
 
 #forms the heat map
 def heat_map(col, row, title):
     st.title(f"{title} Price Map")
     plt.figure(figsize=(10,10))
     sn.heatmap(data=data_call, annot=True, fmt=".2f", cmap="flare", xticklabels=col, yticklabels=row, square=True, cbar_kws={"shrink":0.8})
-    plt.xlabel("Market Price")
+    plt.xlabel("Asset Price")
     plt.ylabel("Volatility")
     st.pyplot(plt)
     plt.close(None)
@@ -164,3 +163,19 @@ with col2:
     st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol), 3)}]")
     st.subheader("the rho of the put")
     st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol), 3)}]")
+
+#creating the information to be downloaded
+content = f'''Ticker: {ticker.upper() if choice else "N/A"}
+Asset Price: {cap}
+Strike Price: {sp}
+Time to Maturity (years:days): {ty}:{ty*365}
+Risk-Free Interest Rate: {rfir}
+Call Premium: {round(call_value(cap, sp, rfir, ty, vol), 4)}
+Put Premium: {round(put_value(cap, sp, rfir, ty, vol), 4)}
+Call Delta: {round(delta("call", cap, sp, rfir, ty, vol), 3)}
+Put Delta: {round(delta("put", cap, sp, rfir, ty, vol), 3)}
+Call Rho: {round(rho("call", cap, sp, rfir, ty, vol), 3)}
+Put Rho: {round(rho("put", cap, sp, rfir, ty, vol), 3)}
+'''
+st.sidebar.write("--------------------------")
+st.sidebar.download_button("Download information", content, "results.txt")
