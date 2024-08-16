@@ -19,4 +19,4 @@ python as my languge of choice for data science applications.
 * Scipy to do statistical computations within the call and put calculations
 
 ## How to access
-* To access this project online, head to the link [blackscholes-erik.streamlit.app](https://blackscholes-erik.streamlit.app/)
+* To access this project online, head to the link [options-erik.streamlit.app](https://options-erik.streamlit.app/)
