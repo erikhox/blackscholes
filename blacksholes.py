@@ -5,24 +5,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
 
-#calculates the d1 of the black scholes formula
-def d1(price, strike, rf, years, vol):
-    return (np.log(price/strike)+years*(rf+np.pow(vol, 2)/2))/(vol*np.sqrt(years))
+#calculates the d1 of the Black-Scholes formula
+def d1(price, strike, rf, years, volatility):
+    return (np.log(price/strike)+years*(rf+np.pow(volatility, 2)/2))/(volatility*np.sqrt(years))
 
-#calculates the d2 of the black scholes formula
-def d2(price, strike, rf, years, vol):
-    return d1(price, strike, rf, years, vol) - vol*np.sqrt(years)
+#calculates the d2 of the Black-Scholes formula
+def d2(price, strike, rf, years, volatility):
+    return d1(price, strike, rf, years, volatility) - volatility*np.sqrt(years)
 
-#calculates the call premium cost using the black scholes formula
-def call_value(price, strike, rf, years, vol):
-    d1_val = d1(price, strike, rf, years, vol)
-    d2_val = d2(price, strike, rf, years, vol)
+#calculates the call premium cost using the Black-Scholes formula
+def call_value(price, strike, rf, years, volatility):
+    d1_val = d1(price, strike, rf, years, volatility)
+    d2_val = d2(price, strike, rf, years, volatility)
     return price*norm.cdf(d1_val)-strike*np.exp(-rf*years)*norm.cdf(d2_val)
 
-#calculates the put premium cost using the black scholes formula
-def put_value(price, strike, rf, years, vol):
-    d1_val = d1(price, strike, rf, years, vol)
-    d2_val = d2(price, strike, rf, years, vol)
+#calculates the put premium cost using the Black-Scholes formula
+def put_value(price, strike, rf, years, volatility):
+    d1_val = d1(price, strike, rf, years, volatility)
+    d2_val = d2(price, strike, rf, years, volatility)
     return strike*np.exp(-rf*years)*norm.cdf(-d2_val)-price*norm.cdf(-d1_val)
 
 #forms the heat map
@@ -31,23 +31,32 @@ def heat_map(col, row, title):
     plt.figure(figsize=(10,10))
     sn.heatmap(data=data_call, annot=True, fmt=".2f", cmap="flare", xticklabels=col, yticklabels=row, square=True, cbar_kws={"shrink":0.8})
     plt.xlabel("Asset Price")
-    plt.ylabel("Volatility")
+    plt.ylabel("volatility")
     st.pyplot(plt)
     plt.close(None)
 
+def print_value(price, strike, rf, years, volatility):
+    with col1:
+        st.subheader("The call value at these values is")
+        st.title(f":green-background[{round(call_value(price, strike, rf, years, volatility), 2)}]")
+
+    with col2:
+        st.subheader("The put value at these values is")
+        st.title(f":red-background[{round(put_value(price, strike, rf, years, volatility), 2)}]")
+
 #performs the calculations for delta
-def delta(option_type, price, strike, rf, years, vol):
+def delta(option_type, price, strike, rf, years, volatility):
     if option_type == "call":
-        return norm.cdf(d1(price, strike, rf, years, vol))
+        return norm.cdf(d1(price, strike, rf, years, volatility))
     elif option_type == "put":
-        return norm.cdf(d1(price, strike, rf, years, vol))-1
+        return norm.cdf(d1(price, strike, rf, years, volatility))-1
 
 #performs the calculations for rho
-def rho(option_type, price, strike, rf, years, vol):
+def rho(option_type, price, strike, rf, years, volatility):
     if option_type == "call":
-        return (strike*years*np.exp(-rf*years)*norm.cdf(d2(price, strike, rf, years, vol)))/100
+        return (strike*years*np.exp(-rf*years)*norm.cdf(d2(price, strike, rf, years, volatility)))/100
     elif option_type == "put":
-        return (-strike*years*np.exp(-rf*years)*norm.cdf(-d2(price, strike, rf, years, vol)))/100
+        return (-strike*years*np.exp(-rf*years)*norm.cdf(-d2(price, strike, rf, years, volatility)))/100
     
 #setting up the page layout
 st.set_page_config(layout="wide")
@@ -73,7 +82,7 @@ if choice:
     #printing out current stock value
     st.sidebar.write(f"Current {ticker.upper()} price: {print_cap}")
 
-    #grabbing user inputed data
+    #grabbing user inputted data
     sp = st.sidebar.number_input("Strike Price", value=100.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
     ty = st.sidebar.number_input("Time to Maturity (Years)", value=1.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.4f")
     
@@ -81,29 +90,18 @@ if choice:
     vol = data["log_return"].std() * np.sqrt(252)
 
     #printing out the call and put values
-    with col1:
-        st.subheader("The call value at these values is")
-        st.title(f":green-background[{round(call_value(cap, sp, rfir, ty, vol), 2)}]")
+    print_value(cap, sp, rfir, ty, vol)
 
-    with col2:
-        st.subheader("The put value at these values is")
-        st.title(f":red-background[{round(put_value(cap, sp, rfir, ty, vol), 2)}]")
 else:
-    #grabbing user inputed data
+    #grabbing user inputted data
     cap = st.sidebar.number_input("Current Asset Price", value=80.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
     sp = st.sidebar.number_input("Strike Price", value=100.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
-    ty = st.sidebar.number_input("Time to Maturity (Years)", value=1.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.4f")
+    ty = st.sidebar.number_input("Time to Maturity", value=1.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.4f")
     vol = st.sidebar.number_input("Volatility", value=0.20, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
     rfir = st.sidebar.number_input("Risk-Free Interest rate", value=0.05, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
 
     #printing out the call and put values
-    with col1:
-        st.subheader("The call value at these values is")
-        st.title(f":green-background[{round(call_value(cap, sp, rfir, ty, vol), 2)}]")
-
-    with col2:
-        st.subheader("The put value at these values is")
-        st.title(f":red-background[{round(put_value(cap, sp, rfir, ty, vol), 2)}]")
+    print_value(cap, sp, rfir, ty, vol)
 
 #grabbing user inputted/generated data for the heatmap parameters
 st.sidebar.write("--------------------------")
@@ -123,7 +121,7 @@ col1, col2 = st.columns(2)
 rows = [(min_vol + i*(max_vol-min_vol)/9) for i in range(0, 10)] #volatility (y-axis)
 columns = [(min_price + i*(max_price-min_price)/9) for i in range(0, 10)] #spot price (x-axis)
 
-#printing out the x and y axis values for the heatmap
+#printing out the x-axis and y-axis values for the heatmap
 rows_print = [round((min_vol + i*(max_vol-min_vol)/9), 2) for i in range(0, 10)]
 columns_print = [round((min_price + i*(max_price-min_price)/9), 2) for i in range(0, 10)]
 
@@ -170,6 +168,7 @@ Asset Price: {cap}
 Strike Price: {sp}
 Time to Maturity (years:days): {ty}:{ty*365}
 Risk-Free Interest Rate: {rfir}
+Volatility: {vol}
 Call Premium: {round(call_value(cap, sp, rfir, ty, vol), 4)}
 Put Premium: {round(put_value(cap, sp, rfir, ty, vol), 4)}
 Call Delta: {round(delta("call", cap, sp, rfir, ty, vol), 3)}
