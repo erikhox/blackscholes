@@ -1,62 +1,7 @@
 import streamlit as st
-from scipy.stats import norm
-import seaborn as sn
-import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
-
-#calculates the d1 of the Black-Scholes formula
-def d1(price, strike, rf, years, volatility):
-    return (np.log(price/strike)+years*(rf+np.pow(volatility, 2)/2))/(volatility*np.sqrt(years))
-
-#calculates the d2 of the Black-Scholes formula
-def d2(price, strike, rf, years, volatility):
-    return d1(price, strike, rf, years, volatility) - volatility*np.sqrt(years)
-
-#calculates the call premium cost using the Black-Scholes formula
-def call_value(price, strike, rf, years, volatility):
-    d1_val = d1(price, strike, rf, years, volatility)
-    d2_val = d2(price, strike, rf, years, volatility)
-    return price*norm.cdf(d1_val)-strike*np.exp(-rf*years)*norm.cdf(d2_val)
-
-#calculates the put premium cost using the Black-Scholes formula
-def put_value(price, strike, rf, years, volatility):
-    d1_val = d1(price, strike, rf, years, volatility)
-    d2_val = d2(price, strike, rf, years, volatility)
-    return strike*np.exp(-rf*years)*norm.cdf(-d2_val)-price*norm.cdf(-d1_val)
-
-#forms the heat map
-def heat_map(col, row, title):
-    st.title(f"{title} Price Map")
-    plt.figure(figsize=(10,10))
-    sn.heatmap(data=data_call, annot=True, fmt=".2f", cmap="flare", xticklabels=col, yticklabels=row, square=True, cbar_kws={"shrink":0.8})
-    plt.xlabel("Asset Price")
-    plt.ylabel("volatility")
-    st.pyplot(plt)
-    plt.close(None)
-
-def print_value(price, strike, rf, years, volatility):
-    with col1:
-        st.subheader("The call value at these values is")
-        st.title(f":green-background[{round(call_value(price, strike, rf, years, volatility), 2)}]")
-
-    with col2:
-        st.subheader("The put value at these values is")
-        st.title(f":red-background[{round(put_value(price, strike, rf, years, volatility), 2)}]")
-
-#performs the calculations for delta
-def delta(option_type, price, strike, rf, years, volatility):
-    if option_type == "call":
-        return norm.cdf(d1(price, strike, rf, years, volatility))
-    elif option_type == "put":
-        return norm.cdf(d1(price, strike, rf, years, volatility))-1
-
-#performs the calculations for rho
-def rho(option_type, price, strike, rf, years, volatility):
-    if option_type == "call":
-        return (strike*years*np.exp(-rf*years)*norm.cdf(d2(price, strike, rf, years, volatility)))/100
-    elif option_type == "put":
-        return (-strike*years*np.exp(-rf*years)*norm.cdf(-d2(price, strike, rf, years, volatility)))/100
+from func import *
     
 #setting up the page layout
 st.set_page_config(layout="wide")
@@ -94,6 +39,7 @@ if choice:
 
 else:
     #grabbing user inputted data
+    ticker = "N/A"
     cap = st.sidebar.number_input("Current Asset Price", value=80.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
     sp = st.sidebar.number_input("Strike Price", value=100.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
     ty = st.sidebar.number_input("Time to Maturity", value=1.00, step=0.01, min_value=0.0, max_value=9999.00, format="%.4f")
@@ -163,7 +109,7 @@ with col2:
     st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol), 3)}]")
 
 #creating the information to be downloaded
-content = f'''Ticker: {ticker.upper() if choice else "N/A"}
+content = f'''Ticker: {ticker.upper()}
 Asset Price: {cap}
 Strike Price: {sp}
 Time to Maturity (years:days): {ty}:{ty*365}
