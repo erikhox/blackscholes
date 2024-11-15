@@ -4,6 +4,7 @@ from scipy.stats import norm
 import seaborn as sn
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 def d1(price, strike, rf, years, volatility):
     '''returns the d1 of the Black-Scholes formula'''
@@ -45,6 +46,16 @@ def print_value(price, strike, rf, years, volatility):
         st.subheader("The put value at these values is")
         st.title(f":red-background[{round(put_value(price, strike, rf, years, volatility), 2)}]")
 
+def print_value_tick(price, strike, rf, years, volatility):
+    '''prints the call and put values to the screen'''
+    with col1:
+        st.subheader("The call value at these values is")
+        st.title(f":green-background[{round(call_value(price, strike, rf, years, volatility)[0], 2)}]")
+
+    with col2:
+        st.subheader("The put value at these values is")
+        st.title(f":red-background[{round(put_value(price, strike, rf, years, volatility)[0], 2)}]")
+
 def delta(option_type, price, strike, rf, years, volatility):
     '''returns the delta of the option'''
     if option_type == "call":
@@ -78,7 +89,7 @@ if choice:
     #creating the values
     rfir = 0.045
     cap = data["Close"].iloc[-1]
-    print_cap = round(cap, 2)
+    print_cap = round(cap[0], 2)
 
     #printing out current stock value
     st.sidebar.write(f"Current {ticker.upper()} price: {print_cap}")
@@ -91,7 +102,7 @@ if choice:
     vol = data["log_return"].std() * np.sqrt(252)
 
     #printing out the call and put values
-    print_value(cap, sp, rfir, ty, vol)
+    print_value_tick(cap, sp, rfir, ty, vol)
 
 else:
     #grabbing user inputted data
@@ -110,8 +121,8 @@ st.sidebar.write("--------------------------")
 st.sidebar.subheader("Heatmap Parameters")
 min_vol = st.sidebar.slider("Min volatility", 0.01, 1.00, vol*0.5)
 max_vol = st.sidebar.slider("Max Volatility", 0.01, 1.00, vol*1.5)
-min_price = st.sidebar.number_input("Min Price", value=cap*0.8, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
-max_price = st.sidebar.number_input("Max Price", value=cap*1.2, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
+min_price = st.sidebar.number_input("Min Price", value=cap.iloc[0] * 0.8 if isinstance(cap, pd.Series) else cap * 0.8, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
+max_price = st.sidebar.number_input("Max Price", value=cap.iloc[0] * 1.2 if isinstance(cap, pd.Series) else cap * 1.2, step=0.01, min_value=0.0, max_value=9999.00, format="%.2f")
 
 #the heatmaps are being setup here
 st.title("Options Heatmap")
@@ -154,15 +165,15 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("the delta of the call")
-    st.header(f":green-background[{round(delta("call", cap, sp, rfir, ty, vol), 3)}]")
+    st.header(f":green-background[{round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}]")
     st.subheader("the rho of the call")
-    st.header(f":green-background[{round(rho("call", cap, sp, rfir, ty, vol), 3)}]")
+    st.header(f":green-background[{round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}]")
 
 with col2:
     st.subheader("the delta of the put")
-    st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol), 3)}]")
+    st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}]")
     st.subheader("the rho of the put")
-    st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol), 3)}]")
+    st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}]")
 
 #creating the information to be downloaded
 content = f'''Ticker: {ticker.upper()}
@@ -171,12 +182,12 @@ Strike Price: {sp}
 Time to Maturity (years:days): {ty}:{ty*365}
 Risk-Free Interest Rate: {rfir}
 Volatility: {vol}
-Call Premium: {round(call_value(cap, sp, rfir, ty, vol), 4)}
-Put Premium: {round(put_value(cap, sp, rfir, ty, vol), 4)}
-Call Delta: {round(delta("call", cap, sp, rfir, ty, vol), 3)}
-Put Delta: {round(delta("put", cap, sp, rfir, ty, vol), 3)}
-Call Rho: {round(rho("call", cap, sp, rfir, ty, vol), 3)}
-Put Rho: {round(rho("put", cap, sp, rfir, ty, vol), 3)}
+Call Premium: {round(call_value(cap, sp, rfir, ty, vol)[0], 4)}
+Put Premium: {round(put_value(cap, sp, rfir, ty, vol)[0], 4)}
+Call Delta: {round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}
+Put Delta: {round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}
+Call Rho: {round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}
+Put Rho: {round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}
 '''
 st.sidebar.write("--------------------------")
 st.sidebar.download_button("Download information", content, "results.txt")
