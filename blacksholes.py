@@ -163,31 +163,61 @@ with col2:
 st.title("Here are greek values for the call/put")
 col1, col2 = st.columns(2)
 
-with col1:
-    st.subheader("the delta of the call")
-    st.header(f":green-background[{round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}]")
-    st.subheader("the rho of the call")
-    st.header(f":green-background[{round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}]")
+if choice:
+    with col1:
+        st.subheader("the delta of the call")
+        st.header(f":green-background[{round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}]")
+        st.subheader("the rho of the call")
+        st.header(f":green-background[{round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}]")
 
-with col2:
-    st.subheader("the delta of the put")
-    st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}]")
-    st.subheader("the rho of the put")
-    st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}]")
+    with col2:
+        st.subheader("the delta of the put")
+        st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}]")
+        st.subheader("the rho of the put")
+        st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}]")
+else:
+    with col1:
+        st.subheader("the delta of the call")
+        st.header(f":green-background[{round(delta("call", cap, sp, rfir, ty, vol), 3)}]")
+        st.subheader("the rho of the call")
+        st.header(f":green-background[{round(rho("call", cap, sp, rfir, ty, vol), 3)}]")
+
+    with col2:
+        st.subheader("the delta of the put")
+        st.header(f":red-background[{round(delta("put", cap, sp, rfir, ty, vol), 3)}]")
+        st.subheader("the rho of the put")
+        st.header(f":red-background[{round(rho("put", cap, sp, rfir, ty, vol), 3)}]")
 
 #creating the information to be downloaded
-content = f'''Ticker: {ticker.upper()}
-Asset Price: {cap}
-Strike Price: {sp}
-Time to Maturity (years:days): {ty}:{ty*365}
-Risk-Free Interest Rate: {rfir}
-Volatility: {vol}
-Call Premium: {round(call_value(cap, sp, rfir, ty, vol)[0], 4)}
-Put Premium: {round(put_value(cap, sp, rfir, ty, vol)[0], 4)}
-Call Delta: {round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}
-Put Delta: {round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}
-Call Rho: {round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}
-Put Rho: {round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}
-'''
-st.sidebar.write("--------------------------")
-st.sidebar.download_button("Download information", content, "results.txt")
+if choice:
+    content = f'''Ticker: {ticker.upper()}
+    Asset Price: {cap}
+    Strike Price: {sp}
+    Time to Maturity (years:days): {ty}:{ty*365}
+    Risk-Free Interest Rate: {rfir}
+    Volatility: {vol}
+    Call Premium: {round(call_value(cap, sp, rfir, ty, vol)[0], 4)}
+    Put Premium: {round(put_value(cap, sp, rfir, ty, vol)[0], 4)}
+    Call Delta: {round(delta("call", cap, sp, rfir, ty, vol)[0], 3)}
+    Put Delta: {round(delta("put", cap, sp, rfir, ty, vol)[0], 3)}
+    Call Rho: {round(rho("call", cap, sp, rfir, ty, vol)[0], 3)}
+    Put Rho: {round(rho("put", cap, sp, rfir, ty, vol)[0], 3)}
+    '''
+    st.sidebar.write("--------------------------")
+    st.sidebar.download_button("Download information", content, "results.txt")
+else:
+    content = f'''Ticker: {ticker.upper()}
+    Asset Price: {cap}
+    Strike Price: {sp}
+    Time to Maturity (years:days): {ty}:{ty*365}
+    Risk-Free Interest Rate: {rfir}
+    Volatility: {vol}
+    Call Premium: {round(call_value(cap, sp, rfir, ty, vol), 4)}
+    Put Premium: {round(put_value(cap, sp, rfir, ty, vol), 4)}
+    Call Delta: {round(delta("call", cap, sp, rfir, ty, vol), 3)}
+    Put Delta: {round(delta("put", cap, sp, rfir, ty, vol), 3)}
+    Call Rho: {round(rho("call", cap, sp, rfir, ty, vol), 3)}
+    Put Rho: {round(rho("put", cap, sp, rfir, ty, vol), 3)}
+    '''
+    st.sidebar.write("--------------------------")
+    st.sidebar.download_button("Download information", content, "results.txt")
